@@ -36,11 +36,11 @@ def cook_ax_shift (data, offsets=None):
 
     odata = data.copy()
 
-    print " * Axis offsets:",
+    print(" * Axis offsets:", end=' ')
     for dim, offs in zip (odata.dim, offsets):
-        print offs,
+        print(offs, end=' ')
         dim.offset += offs
-    print ""
+    print("")
     
     return odata
     
@@ -53,7 +53,7 @@ def cook_norm_noise (data, axis=0, norm_range=None):
     if norm_range is None:
         norm_range = (0, data.dim[axis].size)
         
-    print " * Normalizing intensity along %d, range %d...%d" % (axis, norm_range[0], norm_range[1])
+    print(" * Normalizing intensity along %d, range %d...%d" % (axis, norm_range[0], norm_range[1]))
     return arpes.norm_by_noise (data, axis=axis, ipos=norm_range)
     
 
@@ -62,7 +62,7 @@ def cook_deg2ky (data, axis=0, tilt=0.0, eoffs=0.0):
     Conversion polar -> k coordinates, where 'axis' is the energy axis.
     'tilt' specifies the tilt angle at which the data was measured.
     '''
-    print " * Converting to k-coordinates (energy offset relative to output wave: %f, tilt: %f)" % (eoffs, tilt)
+    print(" * Converting to k-coordinates (energy offset relative to output wave: %f, tilt: %f)" % (eoffs, tilt))
     axtag = ('ed' if axis==0 else 'de')
     return arpes.deg2ky_single (data, axes=axtag, tilt=tilt, eoffs=eoffs)
 
@@ -77,7 +77,7 @@ def cook_norm_gnd(data, axis=0, norm_range=None):
     gnd = np.average(data[norm_range[0]:norm_range[1]]) if axis==0 \
       else np.average(data.swapaxes(0,1)[norm_range[0]:norm_range[1]])
 
-    print " * Substracting background (%d...%d: %f)" % (norm_range[0], norm_range[1], gnd)
+    print(" * Substracting background (%d...%d: %f)" % (norm_range[0], norm_range[1], gnd))
     return data-gnd
 
     
@@ -86,7 +86,7 @@ def cook_fdd(data, axis=0, kT=0, Ef=0):
     Normalizes data by the Fermi-Dirac distribution with specified
     parameters kT and E_F. 'axis' designates the energy axis.
     '''
-    print " * Normalizing to Fermi-Dirac distribution (kT: %f eV, Ef = %f eV)" % (kT, Ef)
+    print(" * Normalizing to Fermi-Dirac distribution (kT: %f eV, Ef = %f eV)" % (kT, Ef))
     return arpes.norm_by_fdd (data, axis=axis, kT=kT, Ef=Ef)
     
 
@@ -115,10 +115,10 @@ def cook_from_beamline (data, eax=0,
         if Ef is not None: # E_F / E-offsset interplay?
             # user specified E_F was relative to original energy axis -- needs adjusting!
             Ef -= eoffs
-            print "   Fermi level adjusted by %f eV, now at Ef=%f." % (eoffs, Ef)
+            print("   Fermi level adjusted by %f eV, now at Ef=%f." % (eoffs, Ef))
         else:
             # no E_F specified: we default to 0 eV on the _new_ axis!
-            print "   Fermi level is af 0 eV on the new axis (default)"
+            print("   Fermi level is af 0 eV on the new axis (default)")
             Ef = 0.0
 
     # intensity normalization across momentum axis
@@ -216,7 +216,7 @@ def arpes_save (wav, param):
         ext  = param.input.name[pindex:]
         param.output = base + ("_ky"*param.deg2ky) + ("_fdd"*param.norm_fdd) + ext
         
-    print "Writing: %s" % param.output
+    print("Writing: %s" % param.output)
 
     if (param.output == param.input.name) and param.safe:
         with NamedTemporaryFile (delete=False) as tmp:
@@ -232,27 +232,27 @@ if __name__ == "__main__":
 
     p = arpes_opt_parse (sys.argv[1:])
 
-    print "Loading:", p.input.name
+    print("Loading:", p.input.name)
     inw = igor.load (p.input)
 
     ## perform argument post-processing (i.e. parsing of string
     ## arguments, unit conversion where necessary).
 
     # eax is always defined (default: 0)
-    print " - Energy axis:", p.eax
+    print(" - Energy axis:", p.eax)
 
     # Ef is always eV
     if p.Ef is not None:
         p.Ef = eval(p.Ef)
     if isinstance(p.Ef, int):
         p.Ef = inw.dim[p.eax].i2x(eval(p.Ef))
-    print " - Fermi level is", p.Ef, "eV"
+    print(" - Fermi level is", p.Ef, "eV")
 
     # norm-region is 'index' if specified
     if p.norm_region is not None:
         nr = [eval(i) for i in p.norm_region.split(':')]
         p.norm_region = [ i if isinstance(i, int) else int(inw.dim[p.eax].x2i_rnd(i)) for i in nr ]
-    print " - Normalization region is", p.norm_region
+    print(" - Normalization region is", p.norm_region)
 
     ## this is where the magic happens
     outw = cook_from_beamline (inw, **vars(p))

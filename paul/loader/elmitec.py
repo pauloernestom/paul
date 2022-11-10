@@ -30,7 +30,8 @@ and Numpy arrays.
 from paul.base.struct_helper import *
 from paul.base.wave import *
 from paul.base.errors import *
-import numpy, StringIO, sys
+import numpy, io, sys
+from functools import reduce
 
 __version__ = '0.1'
 
@@ -269,7 +270,7 @@ def parseDs (buf):
     if (hasattr(buf, 'read')):
         io = buf
     else:
-        io = StringIO.StringIO(buf)
+        io = io.StringIO(buf)
 
     dslist = {}
 

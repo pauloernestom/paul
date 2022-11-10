@@ -73,9 +73,9 @@ def wave_note_edit (wfile_in, wfile_out, safe=True):
         tmp_name = tmp.name
 
     # start editor
-    editor = os.environ['EDITOR'] if os.environ.has_key("EDITOR") else "nano"
+    editor = os.environ['EDITOR'] if "EDITOR" in os.environ else "nano"
     if call([editor, tmp_name]) != 0:
-        print "Editor died unexpectedly. Aborting."
+        print("Editor died unexpectedly. Aborting.")
         return None
 
     # retrieve edited notes
@@ -141,7 +141,7 @@ def wave_note_main (param):
     # print note (param.nprint)
     else:
         for f in files:
-            print wave_note_read (f)
+            print(wave_note_read (f))
 
 
 
@@ -193,7 +193,7 @@ def wave_dim_main (param):
 
         # prepare list of dimensions to be processed (defaults to: all)
         if param.dim is None:
-            param.dim = range(wav.ndim)
+            param.dim = list(range(wav.ndim))
 
         # set attribute / increase attribute
         if param.set is not None:
@@ -215,7 +215,7 @@ def wave_dim_main (param):
         
         # print note (param.nprint)
         else:        
-            print string.join([ str(d) for d in wav.dim ], '\n')
+            print(string.join([ str(d) for d in wav.dim ], '\n'))
 
         # re-write the wave, if modifications were performed
         if wav_save:
@@ -266,16 +266,16 @@ def wave_dump_main(param):
 
         if wav.ndim == 1:
             for x,val in zip(wav, wav.dim[0].range):
-                print x, "\t", val
+                print(x, "\t", val)
 
         elif wav.ndim == 2:
             for block, x in zip(wav, wav.dim[0].range):
                 for val, y in zip(block, block.dim[0].range):
-                    print x, "\t", y, "\t", val
-                print
+                    print(x, "\t", y, "\t", val)
+                print()
 
         else:
-            print "%s: dimension %d > 2, don't know what to do." % wav.ndim
+            print("%s: dimension %d > 2, don't know what to do." % wav.ndim)
             sys.exit(-1)
 
 

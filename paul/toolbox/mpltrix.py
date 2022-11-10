@@ -55,7 +55,7 @@ def plotwater (fig_ax, wlist, xlist=None, axis=0, offs=(0, 0), xlim=(0,0), ylim=
         ylim = (min([np.nanmin(w) for w in wlist]) + (offs[1]*len(wlist)) * (offs[1]<0),
                 max([np.nanmin(w) for w in wlist]) + (offs[1]*len(wlist)) * (offs[1]>0))
 
-    lines = LineCollection([zip(x, w) for x, w in zip(xlist,wlist)], offsets=offs)
+    lines = LineCollection([list(zip(x, w)) for x, w in zip(xlist,wlist)], offsets=offs)
 
     if xlim is not None:
         fig_ax.set_xlim (xlim)
@@ -106,7 +106,7 @@ def imwater (fig_ax, wlist, axis=0, offs=(0, 0), xlim=(0,0), ylim=(0,0), autosca
 
     # swap axes, if anything other than 0 was selected
     if axis != 0:
-        print "Reversing axis"
+        print("Reversing axis")
         data = wlist.swapaxes(0, axis)
     else:
         data = wlist.copy()
@@ -182,7 +182,7 @@ def imwater (fig_ax, wlist, axis=0, offs=(0, 0), xlim=(0,0), ylim=(0,0), autosca
         
 
     ## ...then go for the actual work.
-    lines = LineCollection([zip(x, w) for w in data], offsets=offs)
+    lines = LineCollection([list(zip(x, w)) for w in data], offsets=offs)
 
     if xlim is not None:
         fig_ax.set_xlim (xlim)

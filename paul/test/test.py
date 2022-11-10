@@ -13,6 +13,6 @@ wav = Wave([1,1])
 wav.setScale (0, winfo['sfB'][0], winfo['sfA'][0])
 wav.setScale (0, winfo['sfB'][1], winfo['sfA'][1])
 
-print wav
+print(wav)
 
 # print data

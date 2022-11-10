@@ -257,7 +257,7 @@ def hybridize (wlist, V=0.0):
     V2     = v_sym  /  v_norm
     
     # flatten bands and zip them element-wise together
-    ebands = zip(*[b.flat for b in wlist])
+    ebands = list(zip(*[b.flat for b in wlist]))
 
     # This is where all the magic happens ;-)
     #
@@ -689,8 +689,8 @@ def deg2ky (*args, **kwargs):
 
     # parameter helpers
     _param = lambda k0, k1, d: \
-      kwargs[k0] if kwargs.has_key(k0) \
-      else (kwargs[k1] if kwargs.has_key(k1) else d)
+      kwargs[k0] if k0 in kwargs \
+      else (kwargs[k1] if k1 in kwargs else d)
 
     if args[0].ndim != 3:
         raise ValueError ("Input has to be a 3D array of values. "
@@ -709,7 +709,7 @@ def deg2ky (*args, **kwargs):
     degree = _param ('degree',   'deg', 3)
     #Phi    = _param ('Phi',      'phi', 4.3523)
 
-    print "Preparing grid... ",
+    print("Preparing grid... ", end=' ')
     
     odata  = idata.copy()
 
@@ -751,9 +751,9 @@ def deg2ky (*args, **kwargs):
                                                      num   = len(ideg_t))[None,None,:])
 
 
-    print "done."
+    print("done.")
 
-    print "Calculating reverse coordinates... ",
+    print("Calculating reverse coordinates... ", end=' ')
     log.info ("Calculating reverse coordinates")
     
     # Reverse transformations: this is where the magic happens
@@ -767,10 +767,10 @@ def deg2ky (*args, **kwargs):
     nan_map = np.isnan(odeg_d) + np.isnan(odeg_t)
     odeg_d[nan_map] = ideg_d[0] # safe polar coordinates to...
     odeg_t[nan_map] = ideg_t[0] # ...use with the interpolator.
-    print "done."
+    print("done.")
 
     
-    print "Interpolating data... ",
+    print("Interpolating data... ", end=' ')
     log.info ("Interpolating")
     
     # map_coordinates() takes index coordinates.
@@ -781,13 +781,13 @@ def deg2ky (*args, **kwargs):
                                         #idata.dim[2].x2i(odeg_t))
 
     mode = 'constant'
-    if kwargs.has_key('force_wrap_mode') and kwargs['force_wrap_mode'] == True:
+    if 'force_wrap_mode' in kwargs and kwargs['force_wrap_mode'] == True:
         mode = 'wrap'
         
     spni.map_coordinates (idata, ocoord_index, output=odata.view(np.ndarray),
                           order=degree, mode=mode, cval=fill)
 
-    print "done."
+    print("done.")
     
     # Clean up points that previously had NaN coordinates.
     odata[nan_map] = fill
@@ -824,7 +824,7 @@ def deg2ky_single (wav, tilt_margin=1e-5, **kwargs):
     
     # 'axes' parameter 'ed' or 'de' needs
     # to be expanded to 'edt' or 'det' for deg2ky().
-    if kwargs.has_key('axes'):
+    if 'axes' in kwargs:
         kwargs['axes'] += "t"
 
     # 'tilt' argument has a different meaning:
@@ -842,7 +842,7 @@ def deg2ky_single (wav, tilt_margin=1e-5, **kwargs):
     # slightly wrong results (which are inherent to the way ARPES
     # at non-normal emission works, not related to this algorithm.)
     #
-    if kwargs.has_key('tilt'):
+    if 'tilt' in kwargs:
         tilt = kwargs['tilt']
         del kwargs['tilt']
         kwargs['force_wrap_mode'] = True
@@ -1052,8 +1052,8 @@ def deg2kz (*args, **kwargs):
 
     # parameter helpers
     _param = lambda k0, k1, d: \
-      kwargs[k0] if kwargs.has_key(k0) \
-      else (kwargs[k1] if kwargs.has_key(k1) else d)
+      kwargs[k0] if k0 in kwargs \
+      else (kwargs[k1] if k1 in kwargs else d)
 
     if args[0].ndim != 3:
         raise ValueError ("Input has to be a 3D array of values. "
@@ -1098,7 +1098,7 @@ def deg2kz (*args, **kwargs):
         
     if e_offs is not None:
         log.info ("Energy axis auto-offset: %f  eV." % e_offs)
-        print "Energy axis auto-offset:", e_offs, "eV."
+        print("Energy axis auto-offset:", e_offs, "eV.")
         odata.dim[0].lim = (E[0] + e_offs, E[-1] + e_offs)
 
     #
@@ -1137,7 +1137,7 @@ def deg2kz (*args, **kwargs):
     _dx2ky = lambda deg, ekin:  np.sin(_rad(deg)) * np.sqrt( m2_hsq *  ekin )
     _dx2kz = lambda deg, ekin:                      np.sqrt( m2_hsq * (ekin*(1-np.sin(_rad(deg))**2) + V0 ) )
 
-    print "Preparing grid... ",
+    print("Preparing grid... ", end=' ')
     log.info ("Preparing grid")
 
     Ekin_min = min(E)
@@ -1211,9 +1211,9 @@ def deg2kz (*args, **kwargs):
     E_data, okd, okx = np.broadcast_arrays (E[:,None,None],
                                             kaxis_d[None,:,None],
                                             kaxis_x[None,None,:])
-    print "done."
+    print("done.")
     
-    print "Calculating reverse coordinates... ",
+    print("Calculating reverse coordinates... ", end=' ')
     log.info ("Calculating reverse coordinates")
 
     # Reverse transformations: this is where the magic happens.
@@ -1270,9 +1270,9 @@ def deg2kz (*args, **kwargs):
     nan_map = np.isnan(odeg) + np.isnan(oex)
     odeg[nan_map] = ideg[0]
     oex[nan_map]  = iex[0]
-    print "done."
+    print("done.")
     
-    print "Interpolating... ",
+    print("Interpolating... ", end=' ')
     log.info ("Interpolating")
 
     # map_coordinates() uses index coordinates, need to transform here.
@@ -1297,7 +1297,7 @@ def deg2kz (*args, **kwargs):
     # erase values at coordinates that were originally NaNs
     odata[:,nan_map] = fill
 
-    print "done."
+    print("done.")
     
     return odata
 
@@ -1479,7 +1479,7 @@ def align2d (a, b, iregion=(0, -1, 0, -1), xregion=None,
 
     # the hard work... :-)
     ar = a[indexer]
-    for sx, sy, i in zip(_shx_2d.flat, _shy_2d.flat, range(_shx_2d.size)):
+    for sx, sy, i in zip(_shx_2d.flat, _shy_2d.flat, list(range(_shx_2d.size))):
         ##br = wave.regrid(b, {'shift': sx+offset[0]}, {'shift': sy+offset[1]},
         ##                 units='index').view(np.ndarray)[indexer]
         br = wave.regrid(b, {'shift': sx+offset[0]}, {'shift': sy+offset[1]},
@@ -1619,7 +1619,7 @@ def fermi_guess_ef (*args, **kwargs):
     '''
     if len(args) <= 1:
         axis = 0
-    elif kwargs.has_key('axis'):
+    elif 'axis' in kwargs:
         axis = kwargs['axis']
     else:
         axis = args[1]
@@ -1782,7 +1782,7 @@ def align_stack_ax (dlist, axis=0,
                            isearch, pos0-icheck, pos0+icheck)
 
                 if debug:
-                    print msg
+                    print(msg)
                 log.info (msg)
                 
                 #new_data1 = wave.regrid (d1, {'offset': shift[0]+offs}, units='index')
@@ -1791,7 +1791,7 @@ def align_stack_ax (dlist, axis=0,
             except MemoryError:
                 msg = "MemoryError, retry %d/%d..." % (trycnt, maxtries)
                 log.error ("MemoryError, retry %d/%d..." % (trycnt, maxtries))
-                print msg
+                print(msg)
                 success = False
                 trycnt += 1
 

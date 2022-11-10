@@ -177,9 +177,9 @@ class Structure (struct.Struct):
             struct.Struct.unpack_from(self, buffer, offset))
 
     def unpack_dict(self, string):
-        return dict(zip([f.name for f in self.fields],
-                        self.unpack(string)))
+        return dict(list(zip([f.name for f in self.fields],
+                        self.unpack(string))))
 
     def unpack_dict_from(self, buffer, offset=0):
-        return dict(zip([f.name for f in self.fields],
-                        self.unpack_from(buffer, offset)))
+        return dict(list(zip([f.name for f in self.fields],
+                        self.unpack_from(buffer, offset))))

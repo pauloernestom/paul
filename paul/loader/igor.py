@@ -266,7 +266,7 @@ PackedFileRecordType = {
 }
 
 # invert
-PackedFileRecordId = dict((v,k) for k, v in PackedFileRecordType.iteritems())
+PackedFileRecordId = dict((v,k) for k, v in PackedFileRecordType.items())
 
 def need_to_reorder_bytes(version):
     '''
@@ -475,7 +475,7 @@ def wave_note_generate (infomap, block_prefix='', sep='\r'):
 
 
     ## first, write root-block entries
-    for (k,v) in infomap.iteritems():
+    for (k,v) in infomap.items():
         # there are some sections to be ignored -- they're for internal use only
         if k in ["debug", "strays", "axes", "name", "tmp" ]:
             continue
@@ -494,7 +494,7 @@ def wave_note_generate (infomap, block_prefix='', sep='\r'):
     notestr += sep
 
     ## second, write the regular blocks section
-    for (k,v) in infomap.iteritems():
+    for (k,v) in infomap.items():
         # there are some sections to be ignored -- they're for internal use only
         if k in ["debug", "strays", "axes", "name" ]:
             continue
@@ -899,15 +899,15 @@ def wave_write (wav, filename, autoname=True, autodir=True, note=None):
         # Indexing the reverse dictionary just won't do it... (need to understand why later... :-) )
         wtype    = None
         wtype_id = 0
-        rev_types = dict((v,k) for k,v in TYPE_TABLE.iteritems())
-        for k,v in TYPE_TABLE.iteritems():
+        rev_types = dict((v,k) for k,v in TYPE_TABLE.items())
+        for k,v in TYPE_TABLE.items():
             if wave.dtype == v:
                 wtype = v
                 wtype_id = k
                 #print wtype, wtype_id
         whead['type'] = wtype_id
         if wtype == None:
-            log.warn ("Data type is remains 'None', which probably means that actual type '%s' was not recognized as any of: %s" % (str(wave.dtype), [str(v) for k,v in TYPE_TABLE.iteritems()]))
+            log.warn ("Data type is remains 'None', which probably means that actual type '%s' was not recognized as any of: %s" % (str(wave.dtype), [str(v) for k,v in TYPE_TABLE.items()]))
 
         # set the wave note
         note_text = note if note is not None \
@@ -968,7 +968,7 @@ def wave_find (filename='', pack_tree={}):
     if not os.path.exists(filename):
         real_filename = os.path.join (os.path.dirname(filename), os.path.basename(filename).split(':')[0])
         igor_path = os.path.basename(filename).split(':')[1:]
-        print log.debug ("Path: filesystem=%s, igor=%s" % (real_filename, igor_path))
+        print(log.debug ("Path: filesystem=%s, igor=%s" % (real_filename, igor_path)))
     else:
         real_filename = filename
         igor_path = ''
@@ -983,7 +983,7 @@ def wave_find (filename='', pack_tree={}):
         for idir in igor_path:
             tree = tree[idir]
 
-        if not tree.has_key('offset'):
+        if 'offset' not in tree:
             log.error ("%s (in %s) is not a wave." % (igor_path, real_filename))
             raise IOError ("Component '%s' (inside packed file '%s') is not a wave." % (igor_path, real_filename))
 
@@ -1100,7 +1100,7 @@ def pack_unpack (filename, basedir=".", igordir="", packtree=None):
         if branch['type'] == 'folder':
             pack_unpack (filename, basedir=path_real, igordir=path_igor, packtree=branch['sub'])
         elif branch['type'] == 'wave':
-            print "Unpacking IBW file %s \t(from %s)" % (path_real, path_igor)
+            print("Unpacking IBW file %s \t(from %s)" % (path_real, path_igor))
             if not os.path.isdir (basedir):
                 os.makedirs (basedir)
             dst = open(path_real+".ibw", "wb")
@@ -1207,7 +1207,7 @@ def main_pack_list (options):
     '''
     log.debug ("Scanning %s...")
     pack_tree = pack_scan_tree (options.list)
-    print "Pack Tree:"
+    print("Pack Tree:")
     pprint.pprint (pack_tree)
 
 def main_pack_make (options):
@@ -1233,30 +1233,30 @@ def main_read_info (options):
 def _main_test_rw(argv):
     outfiles = []
     infile = os.path.abspath (os.path.join(argv[0], "../../../doc/igor-doc/URS_HO_App2_007g.ibw"))
-    print "Input:", infile
+    print("Input:", infile)
     for i in range(3):
         outfiles.append(tempfile.mkstemp (suffix=".ibw")[1])
-    print "Output:", outfiles
+    print("Output:", outfiles)
 
     wav = wave_read (infile)
     for i in range(len(outfiles)):
-        print i, outfiles[i], "writing...",
+        print(i, outfiles[i], "writing...", end=' ')
         wave_write (wav[::i+1], outfiles[i])
-        print "reading...",
+        print("reading...", end=' ')
         wav2 = wave_read (outfiles[i])
-        print "ok."
+        print("ok.")
 
     #w2 = array ([[[i+j*10+k*100 for i in range(100)] for j in range(100)] for k in range(100)])
     w2 = array ([[i+j*10for i in range(100)] for j in range(100)])
     w2_files = [tempfile.mkstemp (suffix=".ibw")[1] for i in range(3)]
 
-    print "Test wave to", w2_files[0], "native byte order"
+    print("Test wave to", w2_files[0], "native byte order")
     wave_write (w2.view(Wave), w2_files[0])
 
-    print "Test wave to", w2_files[1], "little endian"
+    print("Test wave to", w2_files[1], "little endian")
     wave_write (w2.view(Wave).newbyteorder('<'), w2_files[1])
 
-    print "Test wave to", w2_files[2], "swapped byte order"
+    print("Test wave to", w2_files[2], "swapped byte order")
     wave_write (w2.view(Wave).newbyteorder('S'), w2_files[2])
                 
 

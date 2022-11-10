@@ -339,7 +339,7 @@ class Wave(ndarray):
 
         >  dst._copy_info (src)
         '''
-        for k,v in from_wave.info.iteritems():
+        for k,v in from_wave.info.items():
             if k != 'axes':
                 self.info[k] = copy.deepcopy(v)
             else:
@@ -581,7 +581,7 @@ class Wave(ndarray):
                     
                 elif isinstance(item, dict):
                     if defitem is not None:
-                        return "%s = %s" % [i for i in item.iteritems()][defitem]
+                        return "%s = %s" % [i for i in item.items()][defitem]
                     else:
                         return item
             else:
@@ -1036,9 +1036,9 @@ class Wave(ndarray):
         more points :-)
         '''
 
-        if kwargs.has_key("i"):
+        if "i" in kwargs:
             i = kwargs['i']
-        elif kwargs.has_key("interpolate"):
+        elif "interpolate" in kwargs:
             i = kwargs['interpolate']
         else:
             i = 'auto'
@@ -1222,7 +1222,7 @@ class Wave(ndarray):
         ii = ndarray([len(self.shape)])
         i1 = ndarray([len(self.shape)], dtype=int)
         i2 = ndarray([len(self.shape)], dtype=int)
-        for v, ai in zip(vals, range(len(self.shape))):
+        for v, ai in zip(vals, list(range(len(self.shape)))):
             ax = self.dim[ai]
             ii[ai] = (ax.x2i(v))
             i1[ai] = floor(ii[ai])
@@ -1387,16 +1387,16 @@ def regrid (wav, *args, **kwargs):
 			def_delta = d.delta  if units == 'axis' else 1
 
 			# parameter 'shift' has precedence over anything else
-			if a.has_key ('shift'):
+			if 'shift' in a:
 				a['offset'] = def_offs + a['shift']
 				a['end']    = def_end  + a['shift']
 
 			# parameter 'numpts' has precedence over others ('delta', 'offset' or 'end')
-			if a.has_key ('numpts'):
-				if a.has_key('delta'):
-					if a.has_key ('offset'):   # ... or offset/end (from delta).
+			if 'numpts' in a:
+				if 'delta' in a:
+					if 'offset' in a:   # ... or offset/end (from delta).
 						a['end'] = a['offset'] + (a['numpts']-1)*a['delta']
-					elif a.has_key ('end'):
+					elif 'end' in a:
 						a['offset'] = a['end'] - (a['numpts']-1)*a['delta']
                         
 				# either calculate delta (from offset/end)...
@@ -1410,7 +1410,7 @@ def regrid (wav, *args, **kwargs):
 			a.setdefault ('delta',  def_delta)
 
 			numpts = int(round(math.fabs((a['end'] - a['offset']) / a['delta']))) + 1
-			if a.has_key ('numpts'):
+			if 'numpts' in a:
 				assert (a['numpts'] == numpts)
 
 			axinfo.append (AxisInfo (parent=None, copy_from=d))
@@ -1572,7 +1572,7 @@ def _print_ok (test, ok="OK", fail="FAILED", verbose=True):
     '''
     ok_string = ["%c[31m%s%c[0m" % (0x1b, fail, 0x1b), "%c[32m%s%c[0m" % (0x1b, ok, 0x1b)]    
     if verbose:
-        print "%s" % ok_string[int(test)],
+        print("%s" % ok_string[int(test)], end=' ')
     return test, ok_string[int(test)]
 
 
@@ -1587,17 +1587,17 @@ def _cmp_arrays (aa, bb, out=True, verbose=None):
 
     test1 = array([int(round(a))==int(round(b)) for a, b in zip(aa.flatten(), bb.flatten())]).all()
     if not test1:
-        print "Elements test failed: "
+        print("Elements test failed: ")
         print ([int(int(round(a))==int(round(b))) for a, b in zip(aa.flatten(), bb.flatten())])
         if verbose == True:
-            print "arrays were:"
+            print("arrays were:")
             pprint (aa)
-            print "and"
+            print("and")
             pprint (bb)
 
     test2 = (aa.shape == bb.shape)
     if not test2:
-        print "Shape test failed: %s differs from %s" % (aa.shape, bb.shape)
+        print("Shape test failed: %s differs from %s" % (aa.shape, bb.shape))
 
     return _print_ok(test1==True and test2==True)
 
@@ -1610,7 +1610,7 @@ def _test_index_consistency (index, verbose=False):
     '''
 
     if verbose:
-        print "Testing consistency of fractional indexing with standard indexing..."
+        print("Testing consistency of fractional indexing with standard indexing...")
 
     fail_sum = 0
 
@@ -1618,11 +1618,11 @@ def _test_index_consistency (index, verbose=False):
     wa = a.view(Wave).copy()
 
     if verbose:
-        print "Test array:"
+        print("Test array:")
         pprint (a)
-        print
+        print()
 
-    print "  Index:", index
+    print("  Index:", index)
 
     S = index
     S0 = index[0]
@@ -1630,8 +1630,8 @@ def _test_index_consistency (index, verbose=False):
 
     foo = []
     if verbose:
-        print "    Standard indexing:",
-        print
+        print("    Standard indexing:", end=' ')
+        print()
     verbose and pprint ("--0--")
     foo.append (a[S0][S1])
     verbose and pprint (foo[0])
@@ -1639,12 +1639,12 @@ def _test_index_consistency (index, verbose=False):
     foo.append(a[S])
     verbose and pprint (foo[1])
     if verbose:
-        print
-        print
+        print()
+        print()
 
-    print "    Limits interpolation:",
+    print("    Limits interpolation:", end=' ')
     if verbose:
-        print
+        print()
     verbose and pprint ("--2--")
     foo.append(wa._copy_fi_lim(S0)._copy_fi_lim(S1))
     verbose and pprint (foo[2])
@@ -1655,10 +1655,10 @@ def _test_index_consistency (index, verbose=False):
     fail_sum -= not _cmp_arrays (foo[0], foo[2])[0]
     fail_sum -= not _cmp_arrays (foo[1], foo[3])[0]
     if verbose:
-        print
-    print
+        print()
+    print()
 
-    print "    Full interpolation:  ",
+    print("    Full interpolation:  ", end=' ')
     verbose and pprint ("")
     verbose and pprint ("--4--")
     foo.append(wa._copy_fi_full(S0)._copy_fi_full(S1))
@@ -1669,12 +1669,12 @@ def _test_index_consistency (index, verbose=False):
     fail_sum -= not _cmp_arrays (foo[0], foo[4])[0]
     fail_sum -= not _cmp_arrays (foo[1], foo[5])[0]
     if verbose:
-        print
-    print
+        print()
+    print()
 
-    print "    Result: ",
+    print("    Result: ", end=' ')
     _print_ok(fail_sum == 0, ok="Consistent", fail="INCONSISTENT")
-    print
+    print()
 
     return fail_sum
 
@@ -1703,7 +1703,7 @@ def _test_index_fraction (index, verbose=False):
             _a_index.append (int(round(i*10)))
     a_index = tuple(_a_index)
 
-    print "  Fractional index: %s \n  against regular:  %s :" % (w_index, a_index),
+    print("  Fractional index: %s \n  against regular:  %s :" % (w_index, a_index), end=' ')
 
     aa = a[a_index]
     ww = w._copy_fi_full(*w_index)
@@ -1717,7 +1717,7 @@ def _test_index_fraction (index, verbose=False):
 
     fail = _cmp_arrays(aa, ww*10, out=True)
 
-    print
+    print()
 
     return -int(not fail[0])
 
@@ -1747,7 +1747,7 @@ def _test_index_call(*call_i, **kwargs):
     if full_i == True:
         full_i = call_i
 
-    print "  Index: call: %s\n\t lim:  %s\n\t full: %s\n  Test" % (call_i, lim_i, full_i),
+    print("  Index: call: %s\n\t lim:  %s\n\t full: %s\n  Test" % (call_i, lim_i, full_i), end=' ')
 
     A = a2(*call_i)
     if reg_i is not None:
@@ -1762,7 +1762,7 @@ def _test_index_call(*call_i, **kwargs):
     verbose and pprint (B)
 
     ret = _cmp_arrays (A, B, verbose=True, out=True)
-    print
+    print()
 
     return -int(ret[0] == False)
 
@@ -1772,7 +1772,7 @@ def _test_index_axslice(index, offsets, deltas, units=None):
     Tests the correct axis-info slicing.
     '''
 
-    print "  Index:", index,
+    print("  Index:", index, end=' ')
 
     a = array([[[i*1+j*10+k*100 \
                      for i in range(5)] \
@@ -1793,7 +1793,7 @@ def _test_index_axslice(index, offsets, deltas, units=None):
         
     _print_ok(fails0 == 0)
     _print_ok(fails1 == 0)
-    print
+    print()
 
     ##
     ## some out-of-schedule testing... :-)
@@ -1812,7 +1812,7 @@ def _test_index():
 
     fail_sum = 0
 
-    print "\nTesting element selection"
+    print("\nTesting element selection")
 
     fail_sum += _test_index_consistency ((slice(0,3),slice(None)))
     fail_sum += _test_index_consistency ((slice(None),slice(0,3)))
@@ -1821,7 +1821,7 @@ def _test_index():
     fail_sum += _test_index_consistency ((slice(0,3),1,slice(None)))
     fail_sum += _test_index_consistency ((1,slice(0,3),slice(None)))
 
-    print "\nTesting dimension boundaries"
+    print("\nTesting dimension boundaries")
 
     fail_sum += _test_index_consistency ((slice(0,5),slice(0,5),0))
     fail_sum += _test_index_consistency ((slice(0,5),0,slice(0,5)))
@@ -1836,7 +1836,7 @@ def _test_index():
     fail_sum += _test_index_consistency ((slice(4,5),slice(0,5),slice(0,5)))
 
 
-    print "\nTesting dimension increasing"
+    print("\nTesting dimension increasing")
 
     fail_sum += _test_index_consistency ((slice(None),slice(None),slice(None),None))
     fail_sum += _test_index_consistency ((slice(None),slice(None),slice(None),None))
@@ -1850,7 +1850,7 @@ def _test_index():
     fail_sum += _test_index_consistency ((None,slice(None),slice(None),slice(None)))
     fail_sum += _test_index_consistency ((None,slice(None),slice(None),slice(None)))
 
-    print "\nTesting dimension consistency"
+    print("\nTesting dimension consistency")
 
     fail_sum += _test_index_consistency ((2,3,4))
     fail_sum += _test_index_consistency ((0,2,0))
@@ -1873,7 +1873,7 @@ def _test_index():
     fail_sum += _test_index_consistency ((slice(None),4,None,0))
 
 
-    print "\nTesting reduced dimension indexing"
+    print("\nTesting reduced dimension indexing")
 
     fail_sum += _test_index_consistency ((2,4))
     fail_sum += _test_index_consistency ((0,0))
@@ -1887,7 +1887,7 @@ def _test_index():
     fail_sum += _test_index_consistency ((slice(None),2))
     fail_sum += _test_index_consistency ((slice(None),0))
 
-    print "\nTesting interpolation performance"
+    print("\nTesting interpolation performance")
 
     fail_sum += _test_index_fraction ((slice(0,4,0.1),slice(0,4,0.1),slice(0,4,0.1)),
                                       verbose=False)
@@ -1898,7 +1898,7 @@ def _test_index():
     fail_sum += _test_index_fraction ((slice(0,4,0.1),slice(0,4,0.1),slice(0,4,0.2)), 
                                       verbose=False)
 
-    print "\nTesting list indexing with interpolation"
+    print("\nTesting list indexing with interpolation")
 
     fail_sum += _test_index_fraction (  ([0.1, 0.2, 1.5], slice(0,4,0.1),  slice(0,4,0.1) ) ,
                                         verbose=False)
@@ -1932,7 +1932,7 @@ def _test_call():
 
     verb = False
 
-    print "\nTesting __call__ operator consistency with lim-interpolation"
+    print("\nTesting __call__ operator consistency with lim-interpolation")
     fail_sum += _test_index_call (0, 0, 0,
                                   lim_i=(2.5, 2.5, 2.5), verbose=verb)
     fail_sum += _test_index_call (slice(None), 0, 0,
@@ -1953,7 +1953,7 @@ def _test_call():
                                   lim_i=(2.5, slice(0,4,1), None, slice(None)), verbose=verb)
 
 
-    print "\nTesting __call__ operator consistency with full-interpolation"
+    print("\nTesting __call__ operator consistency with full-interpolation")
     fail_sum += _test_index_call (0, 0, 0,
                                   full_i=(2.5, 2.5, 2.5), verbose=verb)
     fail_sum += _test_index_call (slice(None), 0, 0,
@@ -1987,7 +1987,7 @@ def _test_scale():
     
     fail_sum = 0
 
-    print "\nTesting correct axis slicing upon [] and () operators:"
+    print("\nTesting correct axis slicing upon [] and () operators:")
     fail_sum += _test_index_axslice (index=(slice(0,5,2),),
                                      deltas=[2,1,1], offsets=[0, 0, 0],
                                      units=['dim0', 'dim1', 'dim2'])
@@ -2040,5 +2040,5 @@ if __name__ == "__main__":
     fail_sum += _test_scale()
     
 
-    print "\nModule: %s (%d failed)\n\n" % (_print_ok (fail_sum==0, verbose=False)[1],
-                                            -fail_sum)
+    print("\nModule: %s (%d failed)\n\n" % (_print_ok (fail_sum==0, verbose=False)[1],
+                                            -fail_sum))
